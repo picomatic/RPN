@@ -206,6 +206,12 @@ public class Main extends Activity implements OnKeyListener {
       this.updateDisplay();
       handled = true;
       break;
+    case 'a':
+        implicitPush();
+        this.error = this.stack.and();
+        this.updateDisplay();
+        handled = true;
+        break;
     default:
       if ((c >= '0' && c <= '9') || c == '.') {
         this.buffer.append(c);

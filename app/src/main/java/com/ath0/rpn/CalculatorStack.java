@@ -263,6 +263,23 @@ public class CalculatorStack implements Serializable {
     return result;
   }
 
+  public String and() {
+    String result = null;
+    if (this.stack.size() > 1) {
+      BigInteger x = this.stack.pop().toBigInteger();
+      BigInteger y = this.stack.pop().toBigInteger();
+      // We use HALF_EVEN rounding because this statistically minimizes
+      // cumulative error during repeated calculations.
+      try {
+        BigInteger r = y.and(x);
+        this.stack.push(new BigDecimal(r));
+      } catch (ArithmeticException e) {
+        result = e.getMessage();
+      }
+    }
+    return result;
+  }
+
   /**
    * Computes the reciprocal of the top element on the stack, and replaces it
    * with the result.
