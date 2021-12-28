@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 
 import android.app.Activity;
 import android.content.ClipData;
@@ -22,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnKeyListener;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
@@ -36,6 +38,8 @@ public class Main extends Activity implements OnKeyListener {
   private CalculatorStack stack;
   private String error;
   private int screenlines;
+  private String lastX = "";
+  private String base = "dec";
 
   /**
    * Typical onCreate for an Android app. Shows an EULA, mostly for the
@@ -45,7 +49,7 @@ public class Main extends Activity implements OnKeyListener {
   public void onCreate(final Bundle savedInstanceState) {
     Log.d("Main", "onCreate");
     super.onCreate(savedInstanceState);
-    Eula.show(this);
+    //Eula.show(this);
     setContentView(R.layout.main);
     loadState();
   }
@@ -137,6 +141,7 @@ public class Main extends Activity implements OnKeyListener {
   public void implicitPush() {
     if (!this.buffer.isEmpty()) {
       final String num = this.buffer.get();
+      lastX = num;
       this.stack.push(num);
       this.buffer.zap();
     }
@@ -167,9 +172,55 @@ public class Main extends Activity implements OnKeyListener {
       this.stack.dup();
     } else {
       final String num = this.buffer.get();
+      lastX = num;
       this.stack.push(num);
       this.buffer.zap();
     }
+    this.updateDisplay();
+  }
+
+  /*
+    Lastx
+   */
+  private void keyLastx() {
+    if (lastX.isEmpty()) return;
+    else {
+      this.stack.push(lastX);
+      this.buffer.zap();
+    }
+    this.updateDisplay();
+  }
+
+  private void bin() {
+    this.stack.bin = true;
+    SetButtons(false);
+    this.updateDisplay();
+  }
+
+  private void SetButtons(boolean state) {
+    Button but = (Button) findViewById(R.id.k2);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k2);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k3);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k4);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k5);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k6);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k7);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k8);
+    but.setEnabled(state);
+    but = (Button) findViewById(R.id.k9);
+    but.setEnabled(state);
+  }
+
+  private void hex() {
+    this.stack.bin = false;
+    SetButtons(true);
     this.updateDisplay();
   }
 
@@ -209,6 +260,12 @@ public class Main extends Activity implements OnKeyListener {
     case 'a':
         implicitPush();
         this.error = this.stack.and();
+        this.updateDisplay();
+        handled = true;
+        break;
+    case 'o':
+        implicitPush();
+        this.error = this.stack.or();
         this.updateDisplay();
         handled = true;
         break;
@@ -276,6 +333,12 @@ public class Main extends Activity implements OnKeyListener {
       updateDisplay();
     } else if ("enter".equals(key)) {
       keyEnter();
+    } else if ("lastx".equals(key)) {
+      keyLastx();
+    } else if ("BIN".equals(key)) {
+      bin();
+    } else if ("HEX".equals(key)) {
+      hex();
     } else {
       final char c = key.charAt(0);
       keyOther(c);
@@ -353,7 +416,7 @@ public class Main extends Activity implements OnKeyListener {
       this.buffer = (InputBuffer) in.readObject();
       in.close();
     } catch (FileNotFoundException ex) {
-      //	Log.i("loadState","No state file found, instantiating empty state"); 
+      //	Log.i("loadState","No state file found, instantiating empty state");
       this.buffer = new InputBuffer();
       this.stack = new CalculatorStack();
     } catch (IOException ex) {
@@ -451,14 +514,14 @@ public class Main extends Activity implements OnKeyListener {
     if (clipboard.hasPrimaryClip()) {
       if (clipboard.getPrimaryClipDescription().hasMimeType(
           ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-        Log.d("setMenuStateForClipboard", "Clipboard is OK");
+        //Log.d("setMenuStateForClipboard", "Clipboard is OK");
         pasteitem.setEnabled(true);
       } else {
-        Log.d("setMenuStateForClipboard", "Clipboard has no plain text");
+        //Log.d("setMenuStateForClipboard", "Clipboard has no plain text");
         pasteitem.setEnabled(false);
       }
     } else {
-      Log.d("setMenuStateForClipboard", "Clipboard is empty");
+      //Log.d("setMenuStateForClipboard", "Clipboard is empty");
       pasteitem.setEnabled(false);
     }
     return true;

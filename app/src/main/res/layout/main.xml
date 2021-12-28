@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/MainLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -61,7 +62,58 @@
         android:layout_height="wrap_content"
         android:layout_weight="0"
         android:columnCount="5"
-        android:rowCount="6">
+        android:rowCount="7">
+
+        <Button
+            android:id="@+id/lastx"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:contentDescription="hh"
+            android:onClick="clickHandler"
+            android:tag="lastx"
+            android:text="LASTx"
+            android:textColor="#FF5722" />
+
+        <Button
+            android:id="@+id/HEX2"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="HEX"
+            android:text="HEX"
+            android:textColor="#FF5722" />
+
+        <Button
+            android:id="@+id/AND2"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="a"
+            android:text="AND"
+            android:textColor="#FF5722" />
+
+        <Button
+            android:id="@+id/OR2"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="o"
+            android:text="OR"
+            android:textColor="#FF5722" />
+
+        <Button
+            android:id="@+id/SL2"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="l"
+            android:text="SL"
+            android:textColor="#FF5722" />
 
         <Button
             android:id="@+id/BIN"
@@ -235,7 +287,7 @@
 
         <Button
             android:id="@+id/enter"
-            style="@style/CalculatorButtonSmallStyle"
+            style="@style/CalculatorButtonLargeStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_rowSpan="2"

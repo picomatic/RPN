@@ -19,6 +19,8 @@ import android.util.Log;
  */
 public class CalculatorStack implements Serializable {
 
+  public boolean bin = false;
+
   /**
    * Object version for serialization.
    */
@@ -121,10 +123,25 @@ public class CalculatorStack implements Serializable {
     if (result.charAt(0) == '-') {
       lowindex = 1;
     }
-    for (int i = dot - 3; i > lowindex; i -= 3) {
-      result.insert(i, ',');
+
+    if(bin)
+    {
+      return nibble(result);
     }
     return result.toString();
+  }
+
+  private String nibble(StringBuilder result) {
+    //Check how much padding is needed
+    //If zero no padding needed
+    int padding = 4 - (result.length() % 4);
+    if(padding != 4)
+    {
+      for(int i = 0; i < padding; i++) {
+        result.insert(0, "0");
+      }
+    }
+    return result.toString().replaceAll(("[0-9A-F]{4}"), "$0 ");
   }
 
   /**
@@ -280,6 +297,23 @@ public class CalculatorStack implements Serializable {
     return result;
   }
 
+  public String or() {
+    String result = null;
+    if (this.stack.size() > 1) {
+      BigInteger x = this.stack.pop().toBigInteger();
+      BigInteger y = this.stack.pop().toBigInteger();
+      // We use HALF_EVEN rounding because this statistically minimizes
+      // cumulative error during repeated calculations.
+      try {
+        BigInteger r = y.or(x);
+        this.stack.push(new BigDecimal(r));
+      } catch (ArithmeticException e) {
+        result = e.getMessage();
+      }
+    }
+    return result;
+  }
+
   /**
    * Computes the reciprocal of the top element on the stack, and replaces it
    * with the result.
@@ -410,5 +444,4 @@ public class CalculatorStack implements Serializable {
     d = Math.pow(x.doubleValue(), y.doubleValue());
     return new BigDecimal(d);
   }
-
 }
