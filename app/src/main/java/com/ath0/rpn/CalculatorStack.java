@@ -54,7 +54,13 @@ public class CalculatorStack implements Serializable {
    */
   public void push(final String number) {
     final BigDecimal newnum = new BigDecimal(number);
-    this.stack.push(newnum);
+
+    if(bin) {
+      this.stack.push(bitStringToBigDecimal(number));
+    } else
+    {
+      this.stack.push(new BigDecimal(number));
+    }
   }
 
   /**
@@ -103,8 +109,14 @@ public class CalculatorStack implements Serializable {
    */
   private String formatNumber(final BigDecimal number) {
     final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
-    result.append(number.setScale(this.scale, 
-        RoundingMode.HALF_UP).toPlainString());
+    if(!bin) {
+      result.append(number.setScale(this.scale,
+              RoundingMode.HALF_UP).toPlainString());
+    } else {
+      result.append(number.toBigInteger().toString(2));
+    }
+
+
     if (this.scale > 0) {
       if (result.indexOf(".") == -1) {
         result.append('.');
@@ -141,7 +153,7 @@ public class CalculatorStack implements Serializable {
         result.insert(0, "0");
       }
     }
-    return result.toString().replaceAll(("[0-9A-F]{4}"), "$0 ");
+    return result.toString().replaceAll(("[0-9A-F]{4}"), "$0 ").trim();
   }
 
   /**
@@ -443,5 +455,22 @@ public class CalculatorStack implements Serializable {
 
     d = Math.pow(x.doubleValue(), y.doubleValue());
     return new BigDecimal(d);
+  }
+
+  //Convert bitstring to decimal
+  public BigDecimal bitStringToBigDecimal(String bitStr){
+
+    BigDecimal sum = new BigDecimal("0");
+    BigDecimal base = new BigDecimal(2);
+    BigDecimal temp;
+
+    for(int i=0 ; i<bitStr.length() ; i++){
+      if(bitStr.charAt(i)== '1'){
+        int exponent= bitStr.length()-1-i;
+        temp=base.pow(exponent);
+        sum=sum.add(temp);
+      }
+    }
+    return sum;
   }
 }
