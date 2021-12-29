@@ -67,7 +67,7 @@ public class CalculatorKeyLayout extends GridLayout implements OnTouchListener {
 	}
 	
 	private void resizeKeys(final int keyboardWidth) {
-	    final int keyw = keyboardWidth / 5;
+	    final int keyw = keyboardWidth / 6;
 	    final int keyh = keyw;
 	    Log.d("resizeKeys", "width = " + Integer.toString(keyboardWidth));
 	    Log.d("resizeKeys", "kh = " + Integer.toString(keyh));

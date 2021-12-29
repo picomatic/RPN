@@ -54,13 +54,17 @@ public class CalculatorStack implements Serializable {
    * InputBuffer.
    */
   public void push(final String number) {
-    final BigDecimal newnum = new BigDecimal(number);
+    try {
+      final BigDecimal newnum = new BigDecimal(number);
 
-    if(bin) {
-      this.stack.push(bitStringToBigDecimal(number));
-    } else
-    {
-      this.stack.push(new BigDecimal(number));
+      if(bin) {
+        this.stack.push(bitStringToBigDecimal(number));
+      } else
+      {
+        this.stack.push(new BigDecimal(number));
+      }
+    } catch (RuntimeException e) {
+      //result = e.getMessage();
     }
   }
 

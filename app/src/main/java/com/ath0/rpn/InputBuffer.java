@@ -56,6 +56,7 @@ public class InputBuffer implements Serializable {
     case '7':
     case '8':
     case '9':
+    case 'E':
       this.buffer.append(ich);
       break;
     default:

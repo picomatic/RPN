@@ -266,7 +266,7 @@ public class Main extends Activity implements OnKeyListener {
         handled = true;
         break;
     default:
-      if ((c >= '0' && c <= '9') || c == '.') {
+      if ((c >= '0' && c <= '9') || c == '.' || c == 'E') {
         this.buffer.append(c);
         this.updateDisplay();
         handled = true;
