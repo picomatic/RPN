@@ -37,6 +37,7 @@ public class CalculatorStack implements Serializable {
   private static final int INTERNAL_SCALE = 32;
 
   private final Stack<BigDecimal> stack;
+  public BigDecimal LastX = null;
 
   // Initial scale is 2 decimal places, as that's the most useful for general 
   // everyday calculations.
@@ -60,6 +61,16 @@ public class CalculatorStack implements Serializable {
     } else
     {
       this.stack.push(new BigDecimal(number));
+    }
+  }
+
+  /**
+   * Push last x onto stack
+   */
+  public void PushLastX()
+  {
+    if(LastX != null) {
+      this.stack.push(LastX);
     }
   }
 
@@ -204,6 +215,7 @@ public class CalculatorStack implements Serializable {
   public void add() {
     if (this.stack.size() > 1) {
       final BigDecimal x = this.stack.pop();
+      LastX = x;
       final BigDecimal y = this.stack.pop();
       final BigDecimal r = y.add(x);
       this.stack.push(r);
@@ -217,6 +229,7 @@ public class CalculatorStack implements Serializable {
   public void subtract() {
     if (this.stack.size() > 1) {
       BigDecimal x = this.stack.pop();
+      LastX = x;
       BigDecimal y = this.stack.pop();
       BigDecimal r = y.subtract(x);
       this.stack.push(r);
@@ -230,6 +243,7 @@ public class CalculatorStack implements Serializable {
   public void multiply() {
     if (this.stack.size() > 1) {
       BigDecimal x = this.stack.pop();
+      LastX = x;
       BigDecimal y = this.stack.pop();
       BigDecimal r = y.multiply(x);
       this.stack.push(r);
@@ -248,6 +262,7 @@ public class CalculatorStack implements Serializable {
     if (this.stack.size() > 1) {
       BigDecimal y = this.stack.pop();
       BigDecimal x = this.stack.pop();
+      LastX = y;
       try {
         BigDecimal r;
         try {
@@ -278,6 +293,7 @@ public class CalculatorStack implements Serializable {
     String result = null;
     if (this.stack.size() > 1) {
       BigDecimal x = this.stack.pop();
+      LastX = x;
       BigDecimal y = this.stack.pop();
       // We use HALF_EVEN rounding because this statistically minimizes 
       // cumulative error during repeated calculations.
@@ -295,7 +311,9 @@ public class CalculatorStack implements Serializable {
   public String and() {
     String result = null;
     if (this.stack.size() > 1) {
-      BigInteger x = this.stack.pop().toBigInteger();
+      BigDecimal x_ = this.stack.pop();
+      LastX = x_;
+      BigInteger x = x_.toBigInteger();
       BigInteger y = this.stack.pop().toBigInteger();
       // We use HALF_EVEN rounding because this statistically minimizes
       // cumulative error during repeated calculations.
@@ -312,7 +330,9 @@ public class CalculatorStack implements Serializable {
   public String or() {
     String result = null;
     if (this.stack.size() > 1) {
-      BigInteger x = this.stack.pop().toBigInteger();
+      BigDecimal x_ = this.stack.pop();
+      LastX = x_;
+      BigInteger x = x_.toBigInteger();
       BigInteger y = this.stack.pop().toBigInteger();
       // We use HALF_EVEN rounding because this statistically minimizes
       // cumulative error during repeated calculations.
@@ -335,6 +355,7 @@ public class CalculatorStack implements Serializable {
     String result = null;
     if (!this.stack.isEmpty()) {
       BigDecimal x = this.stack.pop();
+      LastX = x;
       try {
         BigDecimal y = BigDecimal.ONE.divide(x, INTERNAL_SCALE, 
             RoundingMode.HALF_EVEN);
@@ -362,6 +383,7 @@ public class CalculatorStack implements Serializable {
   public void setScale() {
     if (!this.stack.isEmpty()) {
       BigDecimal x = this.stack.pop();
+      LastX = x;
       int sc = x.intValue();
       if (sc < INTERNAL_SCALE) {
         setScale(sc);
@@ -386,7 +408,9 @@ public class CalculatorStack implements Serializable {
 
     if (!this.stack.isEmpty()) {
       try {
-        BigDecimal x = sqrt(this.stack.pop(), INTERNAL_SCALE);
+        BigDecimal x_ = this.stack.pop();
+        LastX = x_;
+        BigDecimal x = sqrt(x_, INTERNAL_SCALE);
         this.stack.push(x);
       } catch (RuntimeException e) {
         result = e.getMessage();

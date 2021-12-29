@@ -183,11 +183,7 @@ public class Main extends Activity implements OnKeyListener {
     Lastx
    */
   private void keyLastx() {
-    if (lastX.isEmpty()) return;
-    else {
-      this.stack.push(lastX);
-      this.buffer.zap();
-    }
+    this.stack.PushLastX();
     this.updateDisplay();
   }
 
