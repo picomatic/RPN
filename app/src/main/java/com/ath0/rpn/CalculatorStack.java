@@ -214,8 +214,7 @@ public class CalculatorStack implements Serializable {
    */
   public void add() {
     if (this.stack.size() > 1) {
-      final BigDecimal x = this.stack.pop();
-      LastX = x;
+      final BigDecimal x = StoreLastX(this.stack.pop());
       final BigDecimal y = this.stack.pop();
       final BigDecimal r = y.add(x);
       this.stack.push(r);
@@ -228,12 +227,17 @@ public class CalculatorStack implements Serializable {
    */
   public void subtract() {
     if (this.stack.size() > 1) {
-      BigDecimal x = this.stack.pop();
-      LastX = x;
+      BigDecimal x = StoreLastX(this.stack.pop());
       BigDecimal y = this.stack.pop();
       BigDecimal r = y.subtract(x);
       this.stack.push(r);
     }
+  }
+
+  private BigDecimal StoreLastX(BigDecimal x)
+  {
+    LastX = x;
+    return x;
   }
 
   /**
@@ -242,8 +246,7 @@ public class CalculatorStack implements Serializable {
    */
   public void multiply() {
     if (this.stack.size() > 1) {
-      BigDecimal x = this.stack.pop();
-      LastX = x;
+      BigDecimal x = StoreLastX(this.stack.pop());
       BigDecimal y = this.stack.pop();
       BigDecimal r = y.multiply(x);
       this.stack.push(r);
@@ -260,9 +263,9 @@ public class CalculatorStack implements Serializable {
   public String power() {
     String result = null;
     if (this.stack.size() > 1) {
-      BigDecimal y = this.stack.pop();
+      BigDecimal y = StoreLastX(this.stack.pop());
       BigDecimal x = this.stack.pop();
-      LastX = y;
+
       try {
         BigDecimal r;
         try {
@@ -292,8 +295,7 @@ public class CalculatorStack implements Serializable {
   public String divide() {
     String result = null;
     if (this.stack.size() > 1) {
-      BigDecimal x = this.stack.pop();
-      LastX = x;
+      BigDecimal x = StoreLastX(this.stack.pop());
       BigDecimal y = this.stack.pop();
       // We use HALF_EVEN rounding because this statistically minimizes 
       // cumulative error during repeated calculations.
@@ -311,9 +313,7 @@ public class CalculatorStack implements Serializable {
   public String and() {
     String result = null;
     if (this.stack.size() > 1) {
-      BigDecimal x_ = this.stack.pop();
-      LastX = x_;
-      BigInteger x = x_.toBigInteger();
+      BigInteger x = StoreLastX(this.stack.pop()).toBigInteger();
       BigInteger y = this.stack.pop().toBigInteger();
       // We use HALF_EVEN rounding because this statistically minimizes
       // cumulative error during repeated calculations.
@@ -330,9 +330,7 @@ public class CalculatorStack implements Serializable {
   public String or() {
     String result = null;
     if (this.stack.size() > 1) {
-      BigDecimal x_ = this.stack.pop();
-      LastX = x_;
-      BigInteger x = x_.toBigInteger();
+      BigInteger x = StoreLastX(this.stack.pop()).toBigInteger();
       BigInteger y = this.stack.pop().toBigInteger();
       // We use HALF_EVEN rounding because this statistically minimizes
       // cumulative error during repeated calculations.
@@ -354,8 +352,7 @@ public class CalculatorStack implements Serializable {
   public String reciprocal() {
     String result = null;
     if (!this.stack.isEmpty()) {
-      BigDecimal x = this.stack.pop();
-      LastX = x;
+      BigDecimal x = StoreLastX(this.stack.pop());
       try {
         BigDecimal y = BigDecimal.ONE.divide(x, INTERNAL_SCALE, 
             RoundingMode.HALF_EVEN);
@@ -382,8 +379,7 @@ public class CalculatorStack implements Serializable {
    */
   public void setScale() {
     if (!this.stack.isEmpty()) {
-      BigDecimal x = this.stack.pop();
-      LastX = x;
+      BigDecimal x = StoreLastX(this.stack.pop());
       int sc = x.intValue();
       if (sc < INTERNAL_SCALE) {
         setScale(sc);
@@ -408,9 +404,7 @@ public class CalculatorStack implements Serializable {
 
     if (!this.stack.isEmpty()) {
       try {
-        BigDecimal x_ = this.stack.pop();
-        LastX = x_;
-        BigDecimal x = sqrt(x_, INTERNAL_SCALE);
+        BigDecimal x = sqrt(StoreLastX(this.stack.pop()), INTERNAL_SCALE);
         this.stack.push(x);
       } catch (RuntimeException e) {
         result = e.getMessage();
@@ -483,7 +477,6 @@ public class CalculatorStack implements Serializable {
 
   //Convert bitstring to decimal
   public BigDecimal bitStringToBigDecimal(String bitStr){
-
     BigDecimal sum = new BigDecimal("0");
     BigDecimal base = new BigDecimal(2);
     BigDecimal temp;
