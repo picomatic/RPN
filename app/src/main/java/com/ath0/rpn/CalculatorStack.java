@@ -1,12 +1,24 @@
 package com.ath0.rpn;
+import ch.obermuhlner.math.big.BigDecimalMath;
+
+import android.util.Log;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Stack;
 
-import android.util.Log;
+@FunctionalInterface
+interface Function3<One, Two, Three> {
+  public Three apply(One one, Two two);
+}
+@FunctionalInterface
+interface Function4<One, Two, Three, Four> {
+  public Four apply(One one, Two two, Three three);
+}
 
 /**
  * Model for RPN calculator. 
@@ -20,6 +32,7 @@ import android.util.Log;
 public class CalculatorStack implements Serializable {
 
   public boolean bin = false;
+  private static final char[] CH_ZEROS = new char[100];
 
   /**
    * Object version for serialization.
@@ -43,9 +56,15 @@ public class CalculatorStack implements Serializable {
   // everyday calculations.
   private int scale = 2;
 
+  //
+  private BigInteger intVal = null;
+  private transient long smallValue;
+
+
   public CalculatorStack() {
     super();
     this.stack = new Stack<BigDecimal>();
+    Arrays.fill(CH_ZEROS, '0');
   }
 
   /**
@@ -123,15 +142,24 @@ public class CalculatorStack implements Serializable {
    * @return
    */
   private String formatNumber(final BigDecimal number) {
-    final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
-    if(!bin) {
-      result.append(number.setScale(this.scale,
-              RoundingMode.HALF_UP).toPlainString());
+    if(bin) {
+      return binFormat(number);
     } else {
-      result.append(number.toBigInteger().toString(2));
+      //return decFormat(number);
+      return engFormat(number);
     }
+  }
 
+  private String engFormat(BigDecimal number)
+  {
+    final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
+    result.append(toEngineeringString(number.setScale(this.scale, RoundingMode.HALF_UP)));
+    return result.toString();
+  }
 
+  private String decFormat(BigDecimal number) {
+    final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
+    result.append(number.setScale(this.scale, RoundingMode.HALF_UP).toPlainString());
     if (this.scale > 0) {
       if (result.indexOf(".") == -1) {
         result.append('.');
@@ -141,7 +169,7 @@ public class CalculatorStack implements Serializable {
         result.append('0');
       }
     }
-    // Add commas
+    //Add commas
     int dot = result.indexOf(".");
     if (dot < 1) {
       dot = result.length();
@@ -150,11 +178,94 @@ public class CalculatorStack implements Serializable {
     if (result.charAt(0) == '-') {
       lowindex = 1;
     }
+    return result.toString();
+  }
 
-    if(bin)
-    {
-      return nibble(result);
-    }
+  private String binFormat(BigDecimal number) {
+    final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
+    result.append(number.toBigInteger().toString(2));
+    return nibble(result);
+  }
+
+  private BigInteger getUnscaledValue(BigDecimal bigD) {
+    BigInteger i = bigD.unscaledValue();
+    return i;
+  }
+
+  public String toEngineeringString(BigDecimal bigD) {
+    Arrays.fill(CH_ZEROS, '0');
+
+    String intString = getUnscaledValue(bigD).toString();
+    if(bigD.unscaledValue().intValue() == 0)
+      return "0";
+
+    Log.d("BigDecimal tostring", bigD.toString());
+    Log.d("intstring:",intString);
+    Log.d("scale", Integer.toString(bigD.scale()));
+    int begin = (getUnscaledValue(bigD).signum() < 0) ? 2 : 1;
+    int end = intString.length();
+    int iii = bigD.scale();
+    long exponent = -(long)(bigD.scale()) + end - begin;
+    StringBuilder result = new StringBuilder(intString);
+
+    if ((bigD.scale() > 0) && (exponent >= 0)) {
+      if (exponent >= 0) {
+        //result.insert(end - bigD.scale()-(int)exponent, '.');
+        //end++;
+      } else {
+        result.insert(begin - 1, "0.");
+        result.insert(begin + 1, CH_ZEROS, 0, -(int)exponent - 1);
+      }
+    } //else {
+      int delta = end - begin;
+      int rem = (int)(exponent % 3);
+
+      if (rem != 0) {
+        // adjust exponent so it is a multiple of three
+        if (getUnscaledValue(bigD).signum() == 0) {
+          // zero value
+          rem = (rem < 0) ? -rem : 3 - rem;
+          exponent += rem;
+        } else {
+          // nonzero value
+          rem = (rem < 0) ? rem + 3 : rem;
+          exponent -= rem;
+          begin += rem;
+        }
+        if (delta < 3) {
+          //for (int i = rem - delta; i > 0; i--) {
+          //  result.insert(end++, '0');
+          //
+        }
+      }
+      if (end - begin >= 1) {
+        result.insert(begin, '.');
+        int l = result.length();
+        int startDel = begin+bigD.scale();
+
+        if(startDel < l) {
+          result = result.delete(startDel, l - 1);
+        }
+
+
+        while(result.charAt(result.length()-1) == '0')
+        {
+          Log.d("", "0");
+          result.deleteCharAt(result.length()-1);
+        }
+        if(result.charAt(result.length()-1) == '.')
+          result.deleteCharAt(result.length()-1);
+
+        end++;
+      }
+
+      if (exponent != 0) {
+        result.insert(result.length(), 'E');
+        if (exponent > 0) {
+          result.insert(result.length(), '+');
+        }
+        result.insert(result.length(), Long.toString(exponent));
+      }
     return result.toString();
   }
 
@@ -255,6 +366,145 @@ public class CalculatorStack implements Serializable {
       BigDecimal r = y.multiply(x);
       this.stack.push(r);
     }
+  }
+
+  public String percent()
+  {
+    String result = null;
+    if (this.stack.size() > 1) {
+      try
+      {
+        BigDecimal r;
+        BigDecimal x = StoreLastX(this.stack.pop());
+        BigDecimal y = this.stack.pop();
+
+        r = y.divide(new BigDecimal(100)).multiply(x);
+        this.stack.push(r);
+      }
+      catch (ArithmeticException ex)
+      {
+        result = ex.getMessage();
+      }
+      catch (RuntimeException ex)
+      {
+        result = ex.getMessage();
+      }
+    }
+    return result;
+  }
+
+  public String sin() { return ExecuteFunction3((x, y) -> { return BigDecimalMath.sin(x,y); }); }
+  public String asin() { return ExecuteFunction3((x, y) -> { return BigDecimalMath.asin(x,y); }); }
+  public String cos()
+  {
+    return ExecuteFunction3((x, y) -> { return BigDecimalMath.cos(x,y); });
+  }
+  public String acos()
+  {
+    return ExecuteFunction3((x, y) -> { return BigDecimalMath.acos(x,y); });
+  }
+  public String tan()
+  {
+    return ExecuteFunction3((x, y) -> { return BigDecimalMath.tan(x,y); });
+  }
+  public String atan()
+  {
+    return ExecuteFunction3((x, y) -> { return BigDecimalMath.atan(x,y); });
+  }
+
+  public String ln()
+  {
+    return ExecuteFunction3((x, y) -> { return BigDecimalMath.log(x,y); });
+  }
+  public String log10()
+  {
+    return ExecuteFunction3((x, y) -> { return BigDecimalMath.log10(x,y); });
+  }
+  public String log2()
+  {
+    return ExecuteFunction3((x, y) -> { return BigDecimalMath.log2(x,y); });
+  }
+  public String pow()
+  {
+    return ExecuteFunction4((x,y,z) -> { return BigDecimalMath.pow(x,y,z); });
+  }
+  private String ExecuteFunction3(Function3<BigDecimal, MathContext,  BigDecimal> func3)
+  {
+    String result = null;
+    if (this.stack.size() >= 1) {
+      try
+      {
+        BigDecimal x = StoreLastX(this.stack.pop());
+
+        MathContext mathContext = new MathContext(this.scale);
+
+        BigDecimal r;
+        r = func3.apply(x, mathContext);
+        this.stack.push(r);
+      }
+      catch (ArithmeticException ex)
+      {
+        result = ex.getMessage();
+      }
+      catch (RuntimeException ex)
+      {
+        result = ex.getMessage();
+      }
+    }
+    return result;
+  }
+
+  private String ExecuteFunction4(Function4<BigDecimal, BigDecimal, MathContext,  BigDecimal> func4)
+  {
+    String result = null;
+    if (this.stack.size() > 1) {
+      try
+      {
+        BigDecimal y = StoreLastX(this.stack.pop());
+        BigDecimal x = this.stack.pop();
+
+
+        MathContext mathContext = new MathContext(this.scale);
+
+        BigDecimal r;
+        r = func4.apply(x,y, mathContext);
+        this.stack.push(r);
+      }
+      catch (ArithmeticException ex)
+      {
+        result = ex.getMessage();
+      }
+      catch (RuntimeException ex)
+      {
+        result = ex.getMessage();
+      }
+    }
+    return result;
+  }
+
+  public String modulo()
+  {
+    String result = null;
+    if (this.stack.size() > 1) {
+      try
+      {
+        BigDecimal r;
+        BigDecimal x = StoreLastX(this.stack.pop());
+        BigDecimal y = this.stack.pop();
+
+        r = y.remainder(x);
+        this.stack.push(r);
+      }
+      catch (ArithmeticException ex)
+      {
+        result = ex.getMessage();
+      }
+      catch (RuntimeException ex)
+      {
+        result = ex.getMessage();
+      }
+    }
+    return result;
   }
   
   /**
@@ -410,6 +660,24 @@ public class CalculatorStack implements Serializable {
       try {
         BigDecimal x = sqrt(StoreLastX(this.stack.pop()), INTERNAL_SCALE);
         this.stack.push(x);
+      } catch (RuntimeException e) {
+        result = e.getMessage();
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Computes the square of the value on the top of the stack, and
+   * replaces that value with the result.
+   */
+  public String sqr() {
+    String result = null;
+
+    if (!this.stack.isEmpty()) {
+      try {
+        BigDecimal x = StoreLastX(this.stack.pop());
+        this.stack.push(x.multiply(x));
       } catch (RuntimeException e) {
         result = e.getMessage();
       }

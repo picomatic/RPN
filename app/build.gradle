@@ -1,18 +1,21 @@
 apply plugin: 'com.android.application'
-
+repositories {
+  mavenCentral()
+}
 android {
-  compileSdkVersion 30
-  buildToolsVersion "21.1.1"
+  compileSdkVersion 29
+  buildToolsVersion "30.0.3"
 
   defaultConfig {
     applicationId "com.ath0.rpn"
     minSdkVersion 15
-    targetSdkVersion 30
+    targetSdkVersion 29
     versionCode 1
     versionName "1.0"
   }
   buildTypes {
     release {
+
       //runProguard false
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
@@ -21,5 +24,5 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'org.jetbrains:annotations:15.0'
+  implementation 'org.jetbrains:annotations:23.0.0'
 }

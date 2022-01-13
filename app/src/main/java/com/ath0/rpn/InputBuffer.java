@@ -1,8 +1,8 @@
 package com.ath0.rpn;
 
-import java.io.Serializable;
-
 import android.util.Log;
+
+import java.io.Serializable;
 
 /**
  * Implements the calculator's input buffer.
@@ -57,6 +57,7 @@ public class InputBuffer implements Serializable {
     case '8':
     case '9':
     case 'E':
+    case '-':
       this.buffer.append(ich);
       break;
     default:
@@ -105,7 +106,10 @@ public class InputBuffer implements Serializable {
   public String get() {
     return this.buffer.toString();
   }
-
+  public boolean LastChar(char c)
+  {
+    return buffer.toString().endsWith(""+c);
+  }
   @Override
   public String toString() {
     return this.get();

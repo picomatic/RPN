@@ -1,14 +1,5 @@
 package com.ath0.rpn;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.math.BigDecimal;
-
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -28,6 +19,18 @@ import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.math.MathContext;
+
+import ch.obermuhlner.math.big.BigDecimalMath;
+
 
 /**
  * Controller for RPN calculator.
@@ -109,13 +112,7 @@ public class Main extends Activity implements OnKeyListener {
           text.append('\n');
         }
         text.append('0');
-        final int scale = this.stack.getScale();
-        if (scale > 0) {
-          text.append('.');
-          for (int i = 0; i < scale; i++) {
-            text.append('0');
-          }
-        }
+
       } else {
         text = this.stack.toString(this.screenlines);
       }
@@ -219,6 +216,11 @@ public class Main extends Activity implements OnKeyListener {
     SetButtons(true);
     this.updateDisplay();
   }
+  private void dec() {
+    this.stack.bin = false;
+    SetButtons(true);
+    this.updateDisplay();
+  }
 
   /**
    * Handles keyboard operations which can be represented by simple single
@@ -275,6 +277,8 @@ public class Main extends Activity implements OnKeyListener {
     return handled;
   }
 
+
+
   /**
    * Scrolls the number view over to the right. Generally called after any kind
    * of buffer update, so that the update is actually displayed. Uses a queued
@@ -311,30 +315,108 @@ public class Main extends Activity implements OnKeyListener {
       updateDisplay();
     } else if ("pow".equals(key)) {
       implicitPush();
-      this.error = this.stack.power();
+      this.error = this.stack.pow();
       updateDisplay();
     } else if ("1/x".equals(key)) {
       implicitPush();
       this.error = this.stack.reciprocal();
       updateDisplay();
+    }
+    else if ("%".equals(key)) {
+      implicitPush();
+      this.error = this.stack.percent();
+      updateDisplay();
+    }
+    else if ("mod".equals(key)) {
+      implicitPush();
+      this.error = this.stack.modulo();
+      updateDisplay();
+    }
+    else if ("kpi".equals(key)) {
+      String s = String.valueOf(Math.PI);
+      this.stack.push(String.valueOf(Math.PI));
+      updateDisplay();
     } else if ("bsp".equals(key)) {
       keyDelete();
     } else if ("chs".equals(key)) {
-      implicitPush();
-      this.stack.chs();
-      updateDisplay();
+      if(this.buffer.LastChar('E'))
+      {
+        this.buffer.append('-');
+        this.updateDisplay();
+      } else {
+        implicitPush();
+        this.stack.chs();
+        updateDisplay();
+      }
     } else if ("sqrt".equals(key)) {
       implicitPush();
       this.error = this.stack.sqrt();
       updateDisplay();
-    } else if ("enter".equals(key)) {
+    } else if ("sqr".equals(key)) {
+      implicitPush();
+      this.error = this.stack.sqr();
+      updateDisplay();
+    }
+    else if ("enter".equals(key)) {
       keyEnter();
+    }
+    else if ("asin".equals(key)) {
+      implicitPush();
+      this.stack.asin();
+      updateDisplay();
+    }
+    else if ("acos".equals(key)) {
+      implicitPush();
+      this.stack.acos();
+      updateDisplay();
+    }
+    else if ("atan".equals(key)) {
+      implicitPush();
+      this.stack.atan();
+      updateDisplay();
+    }
+    else if ("sin".equals(key)) {
+      implicitPush();
+      this.stack.sin();
+      updateDisplay();
+    }
+    else if ("cos".equals(key)) {
+      implicitPush();
+      this.stack.cos();
+      updateDisplay();
+    }
+    else if ("tan".equals(key)) {
+      implicitPush();
+      this.stack.tan();
+      updateDisplay();
+    }
+    else if ("ln".equals(key)) {
+      implicitPush();
+      this.stack.ln();
+      updateDisplay();
+    }
+    else if ("log10".equals(key)) {
+      implicitPush();
+      this.stack.log10();
+      updateDisplay();
+    }
+    else if ("log2".equals(key)) {
+      implicitPush();
+      this.stack.log2();
+      updateDisplay();
+    }
+    else if ("e".equals(key)) {
+      implicitPush();
+      this.stack.push(BigDecimalMath.e(new MathContext(this.stack.getScale())).toString());
+      updateDisplay();
     } else if ("lastx".equals(key)) {
       keyLastx();
     } else if ("BIN".equals(key)) {
       bin();
     } else if ("HEX".equals(key)) {
       hex();
+    } else if ("DEC".equals(key)) {
+      dec();
     } else {
       final char c = key.charAt(0);
       keyOther(c);
@@ -541,7 +623,7 @@ public class Main extends Activity implements OnKeyListener {
     }
     return result;
   }
-  
+
   /**
    * Handle context menu selection just like options menu selection.
    */
