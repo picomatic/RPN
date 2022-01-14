@@ -31,7 +31,6 @@ import java.math.MathContext;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 
-
 /**
  * Controller for RPN calculator.
  */
@@ -43,6 +42,8 @@ public class Main extends Activity implements OnKeyListener {
   private int screenlines;
   private String lastX = "";
   private String base = "dec";
+  private String state  = "";
+  //private CalcMode mode = CalcMode.DEC;
 
   /**
    * Typical onCreate for an Android app. Shows an EULA, mostly for the
@@ -98,10 +99,36 @@ public class Main extends Activity implements OnKeyListener {
     return true;
   }
 
+  private void updateStatusBar()
+  {
+    final TextView status = (TextView) findViewById(R.id.status);
+    if(this.stack.mode == null)
+      this.stack.mode = CalcMode.DEC;
+    switch (this.stack.mode) {
+      case BIN :
+        state =  "[BIN]";
+        break;
+      case DEC :
+        state =  "[DEC]";
+        break;
+      case HEX :
+        state =  "[HEX]";
+        break;
+      case ENG :
+        state =  "[ENG]";
+        break;
+      default:
+        break;
+    }
+    status.setText(state);
+  }
+
   /**
    * Updates the N-level stack display on screen.
    */
   public void updateDisplay() {
+    updateStatusBar();
+    //final TextView status = (TextView) findViewById(R.id.status);
     final TextView disp = (TextView) findViewById(R.id.Display);
     StringBuilder text;
     if (this.buffer.isEmpty() && this.error == null) {
@@ -185,7 +212,7 @@ public class Main extends Activity implements OnKeyListener {
   }
 
   private void bin() {
-    this.stack.bin = true;
+    this.stack.mode = CalcMode.BIN;
     SetButtons(false);
     this.updateDisplay();
   }
@@ -212,12 +239,17 @@ public class Main extends Activity implements OnKeyListener {
   }
 
   private void hex() {
-    this.stack.bin = false;
+    this.stack.mode = CalcMode.HEX;
     SetButtons(true);
     this.updateDisplay();
   }
   private void dec() {
-    this.stack.bin = false;
+    this.stack.mode = CalcMode.DEC;
+    SetButtons(true);
+    this.updateDisplay();
+  }
+  private void eng() {
+    this.stack.mode = CalcMode.ENG;
     SetButtons(true);
     this.updateDisplay();
   }
@@ -417,6 +449,8 @@ public class Main extends Activity implements OnKeyListener {
       hex();
     } else if ("DEC".equals(key)) {
       dec();
+    } else if ("ENG".equals(key)) {
+      eng();
     } else {
       final char c = key.charAt(0);
       keyOther(c);

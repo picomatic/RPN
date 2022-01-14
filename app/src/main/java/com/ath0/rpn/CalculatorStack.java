@@ -31,7 +31,7 @@ interface Function4<One, Two, Three, Four> {
  */
 public class CalculatorStack implements Serializable {
 
-  public boolean bin = false;
+  public CalcMode mode = CalcMode.DEC;
   private static final char[] CH_ZEROS = new char[100];
 
   /**
@@ -75,8 +75,10 @@ public class CalculatorStack implements Serializable {
   public void push(final String number) {
     try {
       final BigDecimal newnum = new BigDecimal(number);
+      if(mode == null)
+        mode = CalcMode.DEC;
 
-      if(bin) {
+      if(mode == CalcMode.BIN) {
         this.stack.push(bitStringToBigDecimal(number));
       } else
       {
@@ -142,11 +144,19 @@ public class CalculatorStack implements Serializable {
    * @return
    */
   private String formatNumber(final BigDecimal number) {
-    if(bin) {
-      return binFormat(number);
-    } else {
-      //return decFormat(number);
-      return engFormat(number);
+    if(mode == null)
+      mode = CalcMode.DEC;
+    switch(mode){
+      case BIN:
+        return binFormat(number);
+      case HEX :
+        return engFormat(number);
+      case DEC :
+         return decFormat(number);
+      case ENG :
+         return engFormat(number);
+      default :
+        return decFormat(number);
     }
   }
 

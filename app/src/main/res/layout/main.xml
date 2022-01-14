@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:tools="http://schemas.android.com/toofnamels"
     android:id="@+id/MainLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -47,6 +47,12 @@
                     android:scrollHorizontally="false"
                     android:textColor="#000"
                     android:typeface="monospace" />
+
+                <TextView
+                    android:id="@+id/status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TextView" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -54,6 +60,7 @@
             android:layout_width="fill_parent"
             android:layout_height="8dp"
             android:background="@drawable/gradient" />
+
     </FrameLayout>
 
     <com.ath0.rpn.CalculatorKeyLayout
@@ -127,15 +134,15 @@
             android:textColor="#FF5722" />
 
         <Button
-            android:id="@+id/lastx2"
+            android:id="@+id/ENG"
             style="@style/CalculatorButtonSmallStyle"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:contentDescription="hh"
+            android:contentDescription="ENG"
             android:onClick="clickHandler"
-            android:tag="lastx"
-            android:text="LASTx"
-            android:textColor="#FF5722" />
+            android:tag="ENG"
+            android:text="ENG"
+            android:textColor="#FFEB3B" />
 
         <Button
             android:id="@+id/sin"
