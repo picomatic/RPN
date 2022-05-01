@@ -5,7 +5,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="top|left"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <FrameLayout
         android:id="@+id/TopFrame"
@@ -48,11 +48,6 @@
                     android:textColor="#000"
                     android:typeface="monospace" />
 
-                <TextView
-                    android:id="@+id/status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="TextView" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -60,6 +55,16 @@
             android:layout_width="fill_parent"
             android:layout_height="8dp"
             android:background="@drawable/gradient" />
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:paddingLeft="10px"
+            android:paddingTop="15px"
+            android:text="TextView"
+            android:textColor="#040404" />
 
     </FrameLayout>
 
@@ -80,7 +85,8 @@
             android:onClick="clickHandler"
             android:tag="lastx"
             android:text="LASTx"
-            android:textColor="#FF5722" />
+            android:textColor="#FF5722"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/asin"
@@ -90,7 +96,8 @@
             android:onClick="clickHandler"
             android:tag="asin"
             android:text="asin"
-            android:textColor="#FF5722" />
+            android:textColor="#FF5722"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/acos"
@@ -100,7 +107,8 @@
             android:onClick="clickHandler"
             android:tag="acos"
             android:text="acos"
-            android:textColor="#FF5722" />
+            android:textColor="#FF5722"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/atan"
@@ -111,7 +119,8 @@
             android:onClick="clickHandler"
             android:tag="lastx"
             android:text="atan"
-            android:textColor="#FF5722" />
+            android:textColor="#FF5722"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/log10"
@@ -121,7 +130,8 @@
             android:onClick="clickHandler"
             android:tag="log10"
             android:text="log10"
-            android:textColor="#FF5722" />
+            android:textColor="#FF5722"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/log2"
@@ -131,7 +141,8 @@
             android:onClick="clickHandler"
             android:tag="log2"
             android:text="log2"
-            android:textColor="#FF5722" />
+            android:textColor="#FF5722"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/ENG"
@@ -304,6 +315,72 @@
             android:tag="drop"
             android:text="DROP"
             android:textColor="#FF5722" />
+
+        <Button
+            android:id="@+id/A"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="A"
+            android:text="A"
+            android:textColor="#8BC34A"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/B"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="B"
+            android:text="B"
+            android:textColor="#8BC34A"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/C"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="C"
+            android:text="C"
+            android:textColor="#8BC34A"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/D"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="D"
+            android:text="D"
+            android:textColor="#8BC34A"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/E"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="E"
+            android:text="E"
+            android:textColor="#8BC34A"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/F"
+            style="@style/CalculatorButtonSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="clickHandler"
+            android:tag="F"
+            android:text="F"
+            android:textColor="#8BC34A"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/sdp"

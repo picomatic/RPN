@@ -27,6 +27,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
@@ -120,7 +122,35 @@ public class Main extends Activity implements OnKeyListener {
       default:
         break;
     }
+    state = state + String.format("[DP %d]", this.stack.scale);
+    state = state + String.format("[WS %d]", this.stack.wordSize);
+    state = state + (this.stack.cf ? "[c]" : "");
+    if(!buffer.isEmpty()) {
+      state = state + String.format("[%d]", this.buffer.size());
+      try {
+        decvalue(this.buffer.get());
+      } catch (Exception e) {
+        ;
+      }
+    } else
+    {
+      //decvalue(this.stack.Top().toString());
+      state = state + String.format("\n[%s]", this.stack.Bottom().toString());
+
+    }
     status.setText(state);
+  }
+
+  private void decvalue(String val) {
+    if(this.stack.mode == CalcMode.HEX) {
+      BigInteger bi = new BigInteger(val, 16);
+      state = state + String.format("\n[%s]", bi.toString());
+      //state = state + String.format("\n[%s]", );
+    }
+    else if(this.stack.mode == CalcMode.BIN) {
+      state = state + String.format("\n[%s]", new BigInteger(val, 2).toString());
+
+    }
   }
 
   /**
@@ -211,14 +241,30 @@ public class Main extends Activity implements OnKeyListener {
     this.updateDisplay();
   }
 
-  private void bin() {
-    this.stack.mode = CalcMode.BIN;
-    SetButtons(false);
-    this.updateDisplay();
-  }
-
   private void SetButtons(boolean state) {
-    Button but = (Button) findViewById(R.id.k2);
+    int calcMode = 0;
+    if(this.stack.mode == CalcMode.HEX)
+      calcMode = 0;
+    else
+      calcMode = 8;
+    //if(this.base != "hex")
+    //{
+      Button but = (Button) findViewById(R.id.A);
+      but.setVisibility(calcMode);
+      but = (Button) findViewById(R.id.B);
+      but.setVisibility(calcMode);
+      but = (Button) findViewById(R.id.C);
+      but.setVisibility(calcMode);
+      but = (Button) findViewById(R.id.D);
+      but.setVisibility(calcMode);
+      but = (Button) findViewById(R.id.E);
+      but.setVisibility(calcMode);
+      but = (Button) findViewById(R.id.F);
+      but.setVisibility(calcMode);
+    //}
+
+
+    but = (Button) findViewById(R.id.k2);
     but.setEnabled(state);
     but = (Button) findViewById(R.id.k2);
     but.setEnabled(state);
@@ -237,18 +283,29 @@ public class Main extends Activity implements OnKeyListener {
     but = (Button) findViewById(R.id.k9);
     but.setEnabled(state);
   }
-
+  private void bin() {
+    implicitPush();
+    this.stack.mode = CalcMode.BIN;
+    SetButtons(false);
+    this.updateDisplay();
+  }
   private void hex() {
+    implicitPush();
+    if(this.stack.mode == CalcMode.HEX)
+      if(!this.stack.isEmpty())
+          this.stack.wordSize = this.stack.pop().intValue();
     this.stack.mode = CalcMode.HEX;
     SetButtons(true);
     this.updateDisplay();
   }
   private void dec() {
+    implicitPush();
     this.stack.mode = CalcMode.DEC;
     SetButtons(true);
     this.updateDisplay();
   }
   private void eng() {
+    implicitPush();
     this.stack.mode = CalcMode.ENG;
     SetButtons(true);
     this.updateDisplay();
@@ -300,7 +357,10 @@ public class Main extends Activity implements OnKeyListener {
         handled = true;
         break;
     default:
-      if ((c >= '0' && c <= '9') || c == '.' || c == 'E') {
+      if ((c >= '0' && c <= '9') || c == '.' || c == 'E'
+                                 || c == 'A' || c == 'B'
+                                 || c == 'C' || c == 'D'
+                                 || c == 'F'){
         this.buffer.append(c);
         this.updateDisplay();
         handled = true;
@@ -541,6 +601,21 @@ public class Main extends Activity implements OnKeyListener {
     }
     if (this.stack == null) {
       this.stack = new CalculatorStack();
+    }
+    switch (this.stack.mode)
+    {
+      case HEX :
+        hex();
+        break;
+      case BIN:
+        bin();
+        break;
+      case DEC:
+        dec();
+        break;
+      case ENG:
+        eng();
+        break;
     }
   }
 

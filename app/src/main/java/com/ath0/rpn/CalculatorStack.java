@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Stack;
 
 @FunctionalInterface
@@ -52,9 +53,13 @@ public class CalculatorStack implements Serializable {
   private final Stack<BigDecimal> stack;
   public BigDecimal LastX = null;
 
+
   // Initial scale is 2 decimal places, as that's the most useful for general 
   // everyday calculations.
-  private int scale = 2;
+  public int scale = 2;
+  public int wordSize = 64;
+
+  public boolean cf = false;
 
   //
   private BigInteger intVal = null;
@@ -64,6 +69,7 @@ public class CalculatorStack implements Serializable {
   public CalculatorStack() {
     super();
     this.stack = new Stack<BigDecimal>();
+    this.wordSize=64;
     Arrays.fill(CH_ZEROS, '0');
   }
 
@@ -73,20 +79,53 @@ public class CalculatorStack implements Serializable {
    * InputBuffer.
    */
   public void push(final String number) {
+    cf = false;
     try {
-      final BigDecimal newnum = new BigDecimal(number);
       if(mode == null)
         mode = CalcMode.DEC;
 
-      if(mode == CalcMode.BIN) {
-        this.stack.push(bitStringToBigDecimal(number));
-      } else
-      {
-        this.stack.push(new BigDecimal(number));
+      switch(mode) {
+        case BIN :
+          BigInteger bi = bitStringToBigDecimal(number);
+          this.stack.push(wordsizeAnd(bi));
+          break;
+        case HEX :
+          //TODO use considerwordsize
+          bi = new BigInteger(number,16);
+          this.stack.push(wordsizeAnd(bi));
+          break;
+        default :
+          this.stack.push(new BigDecimal(number));
+          break;
       }
     } catch (RuntimeException e) {
       //result = e.getMessage();
     }
+  }
+
+
+  private BigDecimal wordsizeAnd(BigInteger num)
+  {
+    //todo debuggen
+    if(getWordsizeRepresentedInBits().compareTo(num) < 0)
+      {
+        cf = true;
+      }
+    return (new BigDecimal(num.and(getWordsizeRepresentedInBits())));
+  }
+
+  /*
+     dont allow numbers bigger than the wordsize onto the stack
+   */
+  private BigInteger getWordsizeRepresentedInBits()
+  {
+    BigInteger b = new BigInteger("1");
+    BigInteger end = new BigInteger("0");
+    for(int i = 0; i < wordSize; i++)
+    {
+      end = end.add(b.shiftLeft(i));
+    }
+    return end;
   }
 
   /**
@@ -150,7 +189,7 @@ public class CalculatorStack implements Serializable {
       case BIN:
         return binFormat(number);
       case HEX :
-        return engFormat(number);
+        return hexFormat(number);
       case DEC :
          return decFormat(number);
       case ENG :
@@ -195,6 +234,15 @@ public class CalculatorStack implements Serializable {
     final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
     result.append(number.toBigInteger().toString(2));
     return nibble(result);
+  }
+
+  private String hexFormat(BigDecimal number) {
+    //final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
+    //result.append(number.toBigInteger().toString(2));
+    //int decimal = Integer.parseInt(result.toString(),2);
+    //String hexStr = Integer.toString(decimal,16);
+    return number.toBigInteger().toString(16).toUpperCase();
+    //return hexStr.toUpperCase();
   }
 
   private BigInteger getUnscaledValue(BigDecimal bigD) {
@@ -276,7 +324,20 @@ public class CalculatorStack implements Serializable {
         }
         result.insert(result.length(), Long.toString(exponent));
       }
-    return result.toString();
+
+      String newstr = result.toString();
+      newstr = newstr.replace("E+3","k");
+      newstr = newstr.replace("E+6","M");
+      newstr = newstr.replace("E+9","G");
+      newstr = newstr.replace("E+12","T");
+
+      newstr = newstr.replace("E-3","m");
+      newstr = newstr.replace("E-6","\u00B5");
+      newstr = newstr.replace("E-9","n");
+      newstr = newstr.replace("E-12","p");
+
+      return newstr;
+      //return result.toString();
   }
 
   private String nibble(StringBuilder result) {
@@ -311,6 +372,12 @@ public class CalculatorStack implements Serializable {
     }
   }
 
+  public BigDecimal pop()
+  {
+    return this.stack.pop();
+  }
+
+
   /**
    * Duplicates the top element on the stack.
    */
@@ -342,9 +409,33 @@ public class CalculatorStack implements Serializable {
       final BigDecimal x = StoreLastX(this.stack.pop());
       final BigDecimal y = this.stack.pop();
       final BigDecimal r = y.add(x);
-      this.stack.push(r);
+      pushConsideringWordsize(r);
     }
   }
+
+  private void pushConsideringWordsize(BigDecimal r)
+  {
+    cf = false;
+    switch(this.mode) {
+      case HEX :
+       //this.stack.push(new BigDecimal(r.toBigInteger().and((getWordsizeRepresentedInBits()))));
+       //break;
+      case BIN :
+        BigInteger bi = r.toBigInteger();
+        BigInteger biWs = bi.and(getWordsizeRepresentedInBits());
+        this.stack.push(new BigDecimal(bi.and(biWs)));
+
+        if(bi.compareTo(biWs) > 0)
+        {
+          cf = true;
+        }
+        break;
+      default :
+        this.stack.push(r);
+        break;
+    }
+  }
+
 
   /**
    * Subtracts the top number on the stack from the number beneath it, and 
@@ -355,7 +446,7 @@ public class CalculatorStack implements Serializable {
       BigDecimal x = StoreLastX(this.stack.pop());
       BigDecimal y = this.stack.pop();
       BigDecimal r = y.subtract(x);
-      this.stack.push(r);
+      pushConsideringWordsize(r);
     }
   }
 
@@ -374,7 +465,7 @@ public class CalculatorStack implements Serializable {
       BigDecimal x = StoreLastX(this.stack.pop());
       BigDecimal y = this.stack.pop();
       BigDecimal r = y.multiply(x);
-      this.stack.push(r);
+      pushConsideringWordsize(r);
     }
   }
 
@@ -389,7 +480,7 @@ public class CalculatorStack implements Serializable {
         BigDecimal y = this.stack.pop();
 
         r = y.divide(new BigDecimal(100)).multiply(x);
-        this.stack.push(r);
+        pushConsideringWordsize(r);
       }
       catch (ArithmeticException ex)
       {
@@ -450,7 +541,7 @@ public class CalculatorStack implements Serializable {
 
         BigDecimal r;
         r = func3.apply(x, mathContext);
-        this.stack.push(r);
+        pushConsideringWordsize(r);
       }
       catch (ArithmeticException ex)
       {
@@ -478,7 +569,7 @@ public class CalculatorStack implements Serializable {
 
         BigDecimal r;
         r = func4.apply(x,y, mathContext);
-        this.stack.push(r);
+        pushConsideringWordsize(r);
       }
       catch (ArithmeticException ex)
       {
@@ -503,7 +594,7 @@ public class CalculatorStack implements Serializable {
         BigDecimal y = this.stack.pop();
 
         r = y.remainder(x);
-        this.stack.push(r);
+        pushConsideringWordsize(r);
       }
       catch (ArithmeticException ex)
       {
@@ -542,7 +633,7 @@ public class CalculatorStack implements Serializable {
           r = approxPow(x,y);
           Log.d("power", "Computed power approximately");
         }
-        this.stack.push(r);
+        pushConsideringWordsize(r);
       } catch (RuntimeException e) {
         result = e.getMessage();
       }
@@ -566,7 +657,7 @@ public class CalculatorStack implements Serializable {
       try {
         BigDecimal r = y.divide(x, INTERNAL_SCALE,
             RoundingMode.HALF_EVEN);
-        this.stack.push(r);
+        pushConsideringWordsize(r);
       } catch (ArithmeticException e) {
         result = e.getMessage();
       }
@@ -695,6 +786,13 @@ public class CalculatorStack implements Serializable {
     return result;
   }
 
+  public BigDecimal Bottom()
+  {
+    if(!this.stack.isEmpty())
+      return this.stack.lastElement();
+    return new BigDecimal("0");
+  }
+
   /**
    * Computes the square root of x to a given scale, x >= 0.
    * Use Newton's algorithm.
@@ -758,10 +856,10 @@ public class CalculatorStack implements Serializable {
   }
 
   //Convert bitstring to decimal
-  public BigDecimal bitStringToBigDecimal(String bitStr){
-    BigDecimal sum = new BigDecimal("0");
-    BigDecimal base = new BigDecimal(2);
-    BigDecimal temp;
+  public BigInteger bitStringToBigDecimal(String bitStr){
+    BigInteger sum = new BigInteger("0");
+    BigInteger base = new BigInteger("2");
+    BigInteger temp;
 
     for(int i=0 ; i<bitStr.length() ; i++){
       if(bitStr.charAt(i)== '1'){

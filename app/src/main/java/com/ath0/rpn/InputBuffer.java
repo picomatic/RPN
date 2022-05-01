@@ -56,7 +56,12 @@ public class InputBuffer implements Serializable {
     case '7':
     case '8':
     case '9':
+    case 'A':
+    case 'B':
+    case 'C':
+    case 'D':
     case 'E':
+    case 'F':
     case '-':
       this.buffer.append(ich);
       break;
@@ -115,4 +120,8 @@ public class InputBuffer implements Serializable {
     return this.get();
   }
 
+  public int size()
+  {
+    return this.buffer.length();
+  }
 }
